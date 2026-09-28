@@ -1,5 +1,11 @@
 package sk.upjs.ics.users;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,5 +43,30 @@ public class UserService {
         }
 
         return result;
+    }
+
+    private static final String CSV_RESOURCE = "/sk/upjs/ics/testdata/users.csv";
+
+    public static List<User> loadFromCsv() {
+        try (var stream = UserService.class.getResourceAsStream(CSV_RESOURCE);
+             var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+             var lines = reader.lines()) {
+            return lines.skip(1).map(UserService::toUser).toList();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load users from " + CSV_RESOURCE, e);
+        }
+    }
+
+    private static User toUser(String line) {
+        var parts = line.split(",", -1);
+        return new User(
+                Long.valueOf(parts[0]),
+                parts[1],
+                parts[2],
+                parts[3],
+                User.Gender.valueOf(parts[4]),
+                LocalDate.parse(parts[5]),
+                User.Role.valueOf(parts[6])
+        );
     }
 }

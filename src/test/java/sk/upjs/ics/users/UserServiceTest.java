@@ -70,4 +70,18 @@ class UserServiceTest {
         }
     }
 
+    @Test
+    void loadFromCsvReadsAllUsersFromResource() {
+        List<User> users = UserService.loadFromCsv();
+
+        assertEquals(22, users.size());
+
+        assertEquals(new User(1L, "demeter.horvath@student.upjs.sk", "Demeter", "Horváth",
+                Gender.MALE, LocalDate.of(2007, 1, 15), User.Role.STUDENT), users.get(0));
+        assertEquals(new User(21L, "juraj.novak@upjs.sk", "Juraj", "Novák",
+                Gender.MALE, LocalDate.of(1985, 3, 14), User.Role.TEACHER), users.get(20));
+        assertEquals(new User(22L, "petra.kovacova@upjs.sk", "Petra", "Kováčová",
+                Gender.FEMALE, LocalDate.of(1988, 9, 27), User.Role.TEACHER), users.get(21));
+    }
+
 }
