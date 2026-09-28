@@ -8,6 +8,7 @@ public record Subject(
         Long id,
         String name,
         int yearOfStudy,
+        User teacher,
         Set<User> students
 ) {
 }
