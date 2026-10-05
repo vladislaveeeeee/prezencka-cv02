@@ -12,8 +12,14 @@ public record User(
         String surname,
         Gender gender,
         LocalDate birthDate,
-        Role role
+        Role role,
+        boolean active
 ) {
+    public User(Long id, String email, String name, String surname, Gender gender,
+                LocalDate birthDate, Role role) {
+        this(id, email, name, surname, gender, birthDate, role, true);
+    }
+
     public enum Gender {
         MALE,
         FEMALE,
