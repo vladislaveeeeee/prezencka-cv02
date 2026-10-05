@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sk.upjs.ics.attendances.AttendanceEditController">
+   <children>
+      <HBox>
+         <children>
+            <Label text="Dátum: " />
+            <DatePicker fx:id="datePicker" />
+            <Label text="Predmet: ">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Label>
+            <ComboBox fx:id="subjectComboBox" onAction="#subjectComboBoxOnAction" prefWidth="150.0" />
+         </children>
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin>
+      </HBox>
+      <ScrollPane VBox.vgrow="ALWAYS">
+         <content>
+            <VBox fx:id="studentsVBox" spacing="5.0" />
+         </content>
+      </ScrollPane>
+      <ButtonBar>
+        <buttons>
+          <Button fx:id="saveAttendanceButton" mnemonicParsing="false" onAction="#saveAttendanceButton" text="Ulož prezenčku" />
+        </buttons>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+         <padding>
+            <Insets bottom="10.0" top="10.0" />
+         </padding>
+      </ButtonBar>
+   </children>
+   <padding>
+      <Insets left="10.0" right="10.0" top="10.0" />
+   </padding>
+</VBox>

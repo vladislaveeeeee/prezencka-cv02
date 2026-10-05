@@ -54,7 +54,13 @@ public class AttenderController {
         stage.setScene(scene);
         stage.initModality(Modality.APPLICATION_MODAL);
 
+        // otvor okno a cakaj kym ho niekto zavrie
         stage.showAndWait();
+        // potom pokracuj
+
+        attendancesListView.getItems().clear();
+        attendancesListView.getItems().addAll(attendanceDao.findAll());
+
     }
 
     @FXML
