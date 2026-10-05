@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
@@ -59,7 +60,7 @@ public class AttenderController {
         // potom pokracuj
 
         attendancesListView.getItems().clear();
-        attendancesListView.getItems().addAll(attendanceDao.findAll());
+        attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
 
     }
 
@@ -111,9 +112,35 @@ public class AttenderController {
             attendanceDao.create(attendance);
         }
 
+        // ListView cell factory
+        attendancesListView.setCellFactory(param -> new ListCell<>(){
+            @Override
+            protected void updateItem(Attendance item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    var sb = new StringBuilder();
+                    sb.append(item.datetime().toLocalDate());
+                    sb.append(" ");
+                    sb.append(item.subject().name());
+                    sb.append(" (");
+                    sb.append("účasť");
+                    sb.append(" ");
+                    sb.append(item.attendees().size());
+                    sb.append("/");
+                    sb.append(item.subject().students().size());
+                    sb.append(")");
+
+                    setText(sb.toString());
+                }
+            }
+        });
+
 
         // init data
-        attendancesListView.getItems().addAll(attendanceDao.findAll());
+        attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
 
     }
 

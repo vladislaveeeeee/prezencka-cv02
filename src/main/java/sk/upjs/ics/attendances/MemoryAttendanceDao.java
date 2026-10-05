@@ -5,6 +5,7 @@ import sk.upjs.ics.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -53,6 +54,14 @@ public class MemoryAttendanceDao implements AttendanceDao {
     @Override
     public List<Attendance> findAll() {
         return Collections.unmodifiableList(attendances);
+    }
+
+    @Override
+    public List<Attendance> findAllSortedByDate() {
+        return attendances
+                .stream()
+                .sorted(Comparator.comparing(Attendance::datetime).reversed())
+                .toList();
     }
 
     @Override

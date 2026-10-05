@@ -15,6 +15,8 @@ public interface AttendanceDao {
 
     List<Attendance> findAll();
 
+    List<Attendance> findAllSortedByDate();
+
     void deactivate(Long id);
 
     Attendance reactivate(Long id) throws NotFoundException;
