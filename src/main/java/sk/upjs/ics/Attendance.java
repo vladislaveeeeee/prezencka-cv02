@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record Attendance(
-        LocalDateTime data,
+        LocalDateTime date,
         Subject subject,
         List<User> attendees
 ) {
