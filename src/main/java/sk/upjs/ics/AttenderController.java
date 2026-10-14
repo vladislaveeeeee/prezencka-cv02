@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -33,6 +34,10 @@ public class AttenderController {
     @FXML
     private Button newAttendanceButton;
 
+    @FXML
+    private Button deactivateButton;
+
+
     private final UserDao userDao = Factory.INSTANCE.getUserDao();
 
     private final SubjectDao subjectDao = Factory.INSTANCE.getSubjectDao();
@@ -42,6 +47,11 @@ public class AttenderController {
     @FXML
     void attendancesListViewOnMouseClicked(MouseEvent event) throws IOException {
         if (event.getClickCount() != 2) {
+            return;
+        }
+
+        var editedAttendance = attendancesListView.getSelectionModel().getSelectedItem();
+        if (!editedAttendance.active()) {
             return;
         }
 
@@ -56,7 +66,7 @@ public class AttenderController {
         stage.initModality(Modality.APPLICATION_MODAL);
 
         var controller = (AttendanceEditController) loader.getController();
-        controller.setEditedUser(attendancesListView.getSelectionModel().getSelectedItem());
+        controller.setEditedUser(editedAttendance);
 
         // otvor okno a cakaj kym ho niekto zavrie
         stage.showAndWait();
@@ -85,6 +95,16 @@ public class AttenderController {
         attendancesListView.getItems().clear();
         attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
 
+    }
+
+
+    @FXML
+    void deactivateButtonAction(ActionEvent event) {
+        attendancesListView.getSelectionModel().getSelectedItems()
+                .forEach(a -> attendanceDao.deactivate(a.id()));
+
+        attendancesListView.getItems().clear();
+        attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
     }
 
     @FXML
@@ -156,15 +176,17 @@ public class AttenderController {
                     sb.append(item.subject().students().size());
                     sb.append(")");
 
+                    setOpacity(item.active() ? 1.0 : 0.5);
                     setText(sb.toString());
                 }
             }
         });
 
 
+        attendancesListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         // init data
         attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
-
     }
 
 }
