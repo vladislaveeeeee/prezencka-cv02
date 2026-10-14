@@ -10,7 +10,9 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import sk.upjs.ics.BadRequestException;
 import sk.upjs.ics.Factory;
+import sk.upjs.ics.NotFoundException;
 import sk.upjs.ics.subjects.Subject;
 import sk.upjs.ics.subjects.SubjectDao;
 import sk.upjs.ics.users.User;
@@ -40,6 +42,44 @@ public class AttendanceEditController {
     private final AttendanceDao attendanceDao = Factory.INSTANCE.getAttendanceDao();
 
     private final Map<User, CheckBox> checkBoxes = new HashMap<>();
+
+    private Long editedUserId = null;
+
+    public void setEditedUser(Attendance editedUser) {
+        // ulozime si do premennej, ktoreho uzivatela editujeme
+        editedUserId = editedUser.id();
+
+        // nastavime date picker na hodnotu existujucej prezencky
+        datePicker.setValue(editedUser.datetime().toLocalDate());
+        // nastavime date picker aby bol iba na citanie - zmena hodnoty je nemozna
+        datePicker.setDisable(true);
+
+        // analogicky nastavime vyberac na predmety
+        subjectComboBox.setValue(editedUser.subject());
+        subjectComboBox.setDisable(true);
+
+        // vycistime vsetkych zakliknutych studentov (asi nepotrebne tuna)
+        studentsVBox.getChildren().clear();
+        checkBoxes.clear();
+
+        // vyplnime prazdne checkboxy s prihlasenymi studentami
+        editedUser.subject().students()
+                .stream()
+                .sorted(Comparator.comparing(User::id))
+                .forEach(s -> {
+                    var cb = new CheckBox(s.name() + " " + s.surname() + ", " + s.email());
+                    studentsVBox.getChildren().add(cb);
+                    checkBoxes.put(s, cb);
+                });
+
+        // zaskrtneme aktualne pritomnych studentov
+        editedUser.attendees().stream()
+                .map(s -> checkBoxes.get(s))
+                .filter(cb -> cb != null)
+                .forEach(cb -> cb.setSelected(true));
+
+    }
+
     @FXML
     void subjectComboBoxOnAction(ActionEvent event) {
         var subject = subjectComboBox.getValue();
@@ -57,7 +97,7 @@ public class AttendanceEditController {
     }
 
     @FXML
-    void saveAttendanceButton(ActionEvent event) {
+    void saveAttendanceButton(ActionEvent event) throws BadRequestException, NotFoundException {
         // vytvor entitu z GUI komponentov
 
         Set<User> attendees = checkBoxes.entrySet()
@@ -67,15 +107,19 @@ public class AttendanceEditController {
                 .collect(Collectors.toSet());
 
         var attendance = new Attendance(
-                null,
+                editedUserId,
                 datePicker.getValue().atStartOfDay(),
                 subjectComboBox.getValue(),
                 attendees
         );
 
-        // uloz entity do DAO
+        // uloz entitu do DAO
 
-        attendanceDao.create(attendance);
+        if (attendance.id() == null || attendance.id().equals(0L)) {
+            attendanceDao.create(attendance);
+        } else {
+            attendanceDao.update(attendance);
+        }
 
         // zavri okno
 
@@ -109,5 +153,4 @@ public class AttendanceEditController {
         var subjects = subjectDao.findAll();
         subjectComboBox.setItems(FXCollections.observableList(subjects));
     }
-
 }

@@ -13,6 +13,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sk.upjs.ics.attendances.Attendance;
 import sk.upjs.ics.attendances.AttendanceDao;
+import sk.upjs.ics.attendances.AttendanceEditController;
 import sk.upjs.ics.attendances.AttendanceService;
 import sk.upjs.ics.subjects.SubjectDao;
 import sk.upjs.ics.subjects.SubjectService;
@@ -39,8 +40,30 @@ public class AttenderController {
     private final AttendanceDao attendanceDao = Factory.INSTANCE.getAttendanceDao();
 
     @FXML
-    void attendancesListViewOnMouseClicked(MouseEvent event) {
+    void attendancesListViewOnMouseClicked(MouseEvent event) throws IOException {
+        if (event.getClickCount() != 2) {
+            return;
+        }
 
+        var loader = new FXMLLoader(getClass().getResource("attendances/AttendanceEdit.fxml"));
+        Parent rootPane = loader.load();
+
+        var scene = new Scene(rootPane);
+        var stage = new Stage();
+
+        stage.setTitle("Úprava prezenčky");
+        stage.setScene(scene);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        var controller = (AttendanceEditController) loader.getController();
+        controller.setEditedUser(attendancesListView.getSelectionModel().getSelectedItem());
+
+        // otvor okno a cakaj kym ho niekto zavrie
+        stage.showAndWait();
+        // potom pokracuj
+
+        attendancesListView.getItems().clear();
+        attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
     }
 
     @FXML
