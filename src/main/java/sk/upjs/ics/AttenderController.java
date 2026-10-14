@@ -5,10 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -100,8 +97,18 @@ public class AttenderController {
 
     @FXML
     void deactivateButtonAction(ActionEvent event) {
-        attendancesListView.getSelectionModel().getSelectedItems()
-                .forEach(a -> attendanceDao.deactivate(a.id()));
+        var selectedItems = attendancesListView.getSelectionModel().getSelectedItems();
+
+        if (selectedItems.isEmpty()) {
+            return;
+        }
+
+        var alert = new Alert(Alert.AlertType.CONFIRMATION, "Naozaj chcete deaktivovať vybrané prezenčky?");
+        alert.setHeaderText("Deaktivácia prezenčiek");
+        alert.setTitle("Deaktivácia prezenčok");
+        alert.showAndWait();
+
+        selectedItems.forEach(a -> attendanceDao.deactivate(a.id()));
 
         attendancesListView.getItems().clear();
         attendancesListView.getItems().addAll(attendanceDao.findAllSortedByDate());
