@@ -27,8 +27,21 @@ public class MemoryAttendanceDao implements AttendanceDao {
 
     @Override
     public Attendance update(Attendance attendance) throws BadRequestException, NotFoundException {
+        if (attendance == null) {
+            throw new BadRequestException("Cannot update null attendance");
+        }
+
+        if (!attendance.active()) {
+            throw new BadRequestException("Cannot update inactive attendance");
+        }
+
         if (attendance.id() == null || attendance.id() == 0) {
             throw new BadRequestException("Attendance must have an id assigned.");
+        }
+
+        var existing = findById(attendance.id());
+        if (!existing.active()) {
+            throw new BadRequestException("Cannot update inactive attendance");
         }
 
         var index = IntStream.range(0, attendances.size())
