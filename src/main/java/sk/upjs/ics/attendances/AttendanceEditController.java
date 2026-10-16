@@ -43,56 +43,42 @@ public class AttendanceEditController {
 
     private final Map<User, CheckBox> checkBoxes = new HashMap<>();
 
-    private Long editedUserId = null;
+    private Long editedAttendanceId;
 
-    public void setEditedUser(Attendance editedUser) {
-        // ulozime si do premennej, ktoreho uzivatela editujeme
-        editedUserId = editedUser.id();
-
-        // nastavime date picker na hodnotu existujucej prezencky
-        datePicker.setValue(editedUser.datetime().toLocalDate());
-        // nastavime date picker aby bol iba na citanie - zmena hodnoty je nemozna
+    public void setExistingAttendance(Attendance attendance) {
+        editedAttendanceId = attendance.id();
+        datePicker.setValue(attendance.datetime().toLocalDate());
         datePicker.setDisable(true);
-
-        // analogicky nastavime vyberac na predmety
-        subjectComboBox.setValue(editedUser.subject());
+        subjectComboBox.setValue(attendance.subject());
         subjectComboBox.setDisable(true);
 
-        // vycistime vsetkych zakliknutych studentov (asi nepotrebne tuna)
-        studentsVBox.getChildren().clear();
-        checkBoxes.clear();
-
-        // vyplnime prazdne checkboxy s prihlasenymi studentami
-        editedUser.subject().students()
-                .stream()
-                .sorted(Comparator.comparing(User::id))
-                .forEach(s -> {
-                    var cb = new CheckBox(s.name() + " " + s.surname() + ", " + s.email());
-                    studentsVBox.getChildren().add(cb);
-                    checkBoxes.put(s, cb);
-                });
-
-        // zaskrtneme aktualne pritomnych studentov
-        editedUser.attendees().stream()
-                .map(s -> checkBoxes.get(s))
+        showStudents(attendance.subject());
+        attendance.attendees().stream()
+                .map(checkBoxes::get)
                 .filter(cb -> cb != null)
                 .forEach(cb -> cb.setSelected(true));
-
     }
 
     @FXML
     void subjectComboBoxOnAction(ActionEvent event) {
-        var subject = subjectComboBox.getValue();
+        showStudents(subjectComboBox.getValue());
+    }
+
+    private void showStudents(Subject subject) {
         studentsVBox.getChildren().clear();
         checkBoxes.clear();
+        if (subject == null) {
+            return;
+        }
 
-        subject.students()
-                .stream()
-                .sorted(Comparator.comparing(User::id))
-                .forEach(s -> {
-                    CheckBox cb = new CheckBox(s.name() + " " + s.surname() + ", " + s.email());
+        subject.students().stream()
+                .sorted(Comparator.comparing(User::surname)
+                        .thenComparing(User::name)
+                        .thenComparing(User::id))
+                .forEach(student -> {
+                    var cb = new CheckBox(student.name() + " " + student.surname() + ", " + student.email());
                     studentsVBox.getChildren().add(cb);
-                    checkBoxes.put(s, cb);
+                    checkBoxes.put(student, cb);
                 });
     }
 
@@ -107,7 +93,7 @@ public class AttendanceEditController {
                 .collect(Collectors.toSet());
 
         var attendance = new Attendance(
-                editedUserId,
+                editedAttendanceId,
                 datePicker.getValue().atStartOfDay(),
                 subjectComboBox.getValue(),
                 attendees
@@ -115,7 +101,7 @@ public class AttendanceEditController {
 
         // uloz entitu do DAO
 
-        if (attendance.id() == null || attendance.id().equals(0L)) {
+        if (editedAttendanceId == null) {
             attendanceDao.create(attendance);
         } else {
             attendanceDao.update(attendance);

@@ -20,7 +20,6 @@ import sk.upjs.ics.users.UserService;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AttenderController {
@@ -48,7 +47,7 @@ public class AttenderController {
         }
 
         var editedAttendance = attendancesListView.getSelectionModel().getSelectedItem();
-        if (!editedAttendance.active()) {
+        if (editedAttendance == null || !editedAttendance.active()) {
             return;
         }
 
@@ -63,7 +62,7 @@ public class AttenderController {
         stage.initModality(Modality.APPLICATION_MODAL);
 
         var controller = (AttendanceEditController) loader.getController();
-        controller.setEditedUser(editedAttendance);
+        controller.setExistingAttendance(editedAttendance);
 
         // otvor okno a cakaj kym ho niekto zavrie
         stage.showAndWait();
@@ -105,8 +104,11 @@ public class AttenderController {
 
         var alert = new Alert(Alert.AlertType.CONFIRMATION, "Naozaj chcete deaktivovať vybrané prezenčky?");
         alert.setHeaderText("Deaktivácia prezenčiek");
-        alert.setTitle("Deaktivácia prezenčok");
-        alert.showAndWait();
+        alert.setTitle("Deaktivácia prezenčiek");
+        var result = alert.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
 
         selectedItems.forEach(a -> attendanceDao.deactivate(a.id()));
 
