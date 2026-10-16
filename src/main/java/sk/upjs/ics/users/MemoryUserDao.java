@@ -26,8 +26,21 @@ public class MemoryUserDao implements UserDao {
 
     @Override
     public User update(User user) throws BadRequestException, NotFoundException {
+        if (user == null) {
+            throw new BadRequestException("Cannot update null user");
+        }
+
+        if (!user.active()) {
+            throw new BadRequestException("Cannot update inactive user");
+        }
+
         if (user.id() == null || user.id() == 0) {
             throw new BadRequestException("User must have an id assigned.");
+        }
+
+        var existing = findById(user.id());
+        if (!existing.active()) {
+            throw new BadRequestException("Cannot update inactive user");
         }
 
         var index = IntStream.range(0, users.size())

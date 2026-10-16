@@ -26,8 +26,21 @@ public class MemorySubjectDao implements SubjectDao {
 
     @Override
     public Subject update(Subject subject) throws BadRequestException, NotFoundException {
+        if (subject == null) {
+            throw new BadRequestException("Cannot update null subject");
+        }
+
+        if (!subject.active()) {
+            throw new BadRequestException("Cannot update inactive subject");
+        }
+
         if (subject.id() == null || subject.id() == 0) {
             throw new BadRequestException("Subject must have an id assigned.");
+        }
+
+        var existing = findById(subject.id());
+        if (!existing.active()) {
+            throw new BadRequestException("Cannot update inactive subject");
         }
 
         var index = IntStream.range(0, subjects.size())

@@ -35,6 +35,10 @@ class MemoryUserDaoTest {
         assertEquals(renamed, dao.findById(created.id()), "update is persisted");
         assertEquals(2, dao.findAll().size());
 
+        assertThrows(BadRequestException.class, () -> dao.update(null));
+        assertThrows(BadRequestException.class, () -> dao.update(renamed.withActive(false)));
+        assertEquals(renamed, dao.findById(created.id()), "rejected update leaves the record unchanged");
+
         dao.deactivate(created.id());
         var deactivated = renamed.withActive(false);
         assertEquals(deactivated, dao.findById(created.id()), "findById sees the deactivated record");
@@ -42,8 +46,14 @@ class MemoryUserDaoTest {
         assertEquals(2, dao.findAll().size(), "findAll lists also deactivated records");
         assertFalse(dao.findById(created.id()).active());
 
+        assertThrows(BadRequestException.class, () -> dao.update(deactivated));
+        assertThrows(BadRequestException.class, () -> dao.update(renamed),
+                "update cannot reactivate an inactive stored record");
+        assertEquals(deactivated, dao.findById(created.id()));
+
         assertEquals(deactivated.withActive(true), dao.reactivate(created.id()), "reactivate returns the reactivated entity");
         assertTrue(dao.findById(created.id()).active(), "reactivate is persisted");
+        assertEquals(renamed, dao.update(renamed), "updates work after explicit reactivation");
 
         var all = dao.findAll();
         assertThrows(UnsupportedOperationException.class, all::clear, "findAll returns an unmodifiable list");
