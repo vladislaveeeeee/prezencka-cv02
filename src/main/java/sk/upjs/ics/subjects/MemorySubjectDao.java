@@ -3,6 +3,7 @@ package sk.upjs.ics.subjects;
 import sk.upjs.ics.BadRequestException;
 import sk.upjs.ics.NotFoundException;
 
+import java.nio.channels.NotYetBoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +42,15 @@ public class MemorySubjectDao implements SubjectDao {
         subjects.set(index, subject);
         return subject;
     }
+
+//    @Override
+//    public Subject findById(Long id) throws NotFoundException {
+//        return subjects.stream()
+//                .filter(subject -> subject.id().equals(id))
+//                .findFirst()
+//                .orElseThrow(() -> new NotFoundException("Subject with id " + id + " does not exist."));
+//    }
+
 
     @Override
     public Subject findById(Long id) throws NotFoundException {
